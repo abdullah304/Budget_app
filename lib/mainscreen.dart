@@ -11,19 +11,6 @@ class MainScreen extends StatelessWidget {
         title: Text("Budget"),
         centerTitle: true,
         ),
-      /*body: Center(
-
-          child: Text("Next", style: TextStyle(
-            primarySwatch: Colors.white,
-          ),
-          ),
-          color: Colors.amber,
-          //onPressed: (){
-          //  Navigator.push(context, MaterialPageRoute(builder: (context) => SecondScreen()),
-           // );
-          }
-        ),
-      ),*/
     );
   }
 }
