@@ -8,16 +8,9 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: Icon(Icons.menu), onPressed: (){
-          //
-        }),
         title: Text("Budget"),
-        actions: [
-          IconButton(icon: Icon(Icons.search), onPressed: (){
-            //
-          }),
-        ],
-      ),
+        centerTitle: true,
+        ),
       /*body: Center(
 
           child: Text("Next", style: TextStyle(
