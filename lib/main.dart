@@ -1,3 +1,4 @@
+import 'package:budget_app/event.dart';
 import 'package:flutter/material.dart';
 import 'mainscreen.dart';
 
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
 
         primarySwatch: Colors.amber,
       ),
-      home: const MainScreen(),
+      home: const EventScreen(),
     );
   }
 }
