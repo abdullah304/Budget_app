@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
 
         primarySwatch: Colors.amber,
       ),
-      home: const EventScreen(),
+      home: const MainScreen(),
     );
   }
 }

@@ -11,6 +11,11 @@ class MainScreen extends StatelessWidget {
         title: Text("Budget"),
         centerTitle: true,
         ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        //tool tip: increment Counter
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
