@@ -11,10 +11,14 @@ class EventScreen extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Budget"),
+        centerTitle: true,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(30.0),
         child: Column(
-          verticalDirection: VerticalDirection.up,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               //controller: textController ,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import 'secondscreen.dart';
+import 'event.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -12,7 +12,9 @@ class MainScreen extends StatelessWidget {
         centerTitle: true,
         ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => EventScreen()));
+        },
         //tool tip: increment Counter
         child: const Icon(Icons.add),
       ),
