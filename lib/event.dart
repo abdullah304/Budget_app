@@ -34,16 +34,19 @@ class EventScreen extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
             ),
+            Container(
+
+              child: Center(
+                child: IconButton(
+                  icon: const Icon(Icons.search),
+                  color: Colors.amber,
+                  onPressed: () {},
+                ),
+              ),
+            ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-      onPressed: () {},
-        //tool tip: increment Counter
-        child: const Icon(Icons.search),
-      //
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
