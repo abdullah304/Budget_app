@@ -27,11 +27,23 @@ class EventScreen extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
             ),
+            SizedBox(height: 20),
+            TextField(
+              decoration: InputDecoration(
+                hintText:"Enter Amount",
+                border: OutlineInputBorder(),
+              ),
+            ),
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+      onPressed: () {},
+        //tool tip: increment Counter
+        child: const Icon(Icons.search),
       //
-
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
