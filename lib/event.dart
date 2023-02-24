@@ -4,9 +4,6 @@ import 'package:flutter/material.dart';
 
 class EventScreen extends StatelessWidget {
   const EventScreen({Key? key}) : super(key: key);
-
-  // keeps track of what the user typed
-  //final textController = TextEditingController();
   @override
   Widget build(BuildContext context) {
 
@@ -34,13 +31,20 @@ class EventScreen extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
             ),
+            SizedBox(height: 20),
             Container(
-
               child: Center(
-                child: IconButton(
-                  icon: const Icon(Icons.search),
-                  color: Colors.amber,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    shape: CircleBorder(),
+                  ),
                   onPressed: () {},
+                  child: IconButton(
+                  icon: const Icon(Icons.search),
+                  color: Colors.black,
+                  onPressed: () {},
+                  ),
                 ),
               ),
             ),
