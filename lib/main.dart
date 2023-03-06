@@ -2,6 +2,7 @@ import 'package:budget_app/event.dart';
 import 'package:flutter/material.dart';
 import 'mainscreen.dart';
 
+
 void main() {
   runApp(const MyApp());
 }
