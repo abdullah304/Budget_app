@@ -26,8 +26,39 @@ class EventScreen extends StatefulWidget {
 
 class _EventScreenState extends State<EventScreen> {
   List<dynamic> events = [];
-  // keeps track of what the user typed
-  //final textController = TextEditingController();
+  List<dynamic> cacheEvents = [];
+  final searchController = TextEditingController(); //
+
+  @override
+  void initState() {
+    super.initState();
+    fetchEvents();
+  }
+
+  Future<void> fetchEvents() async {
+    var result = await MyAPI().fetchSomeData('Events in Santa Cruz');
+    var decodedResult = jsonDecode(result);
+    List<dynamic> newEvents = decodedResult
+        .map((event) => Event(
+            name: event['title'],
+            description: event['description'] ?? '',
+            date: event['date']['start_date'] ?? '',
+            thumbnail: event['thumbnail'] ?? ''))
+        .toList();
+    setState(() {
+      events = newEvents;
+      cacheEvents = newEvents;
+    });
+  }
+
+  void filterEvents(String searchText) {
+    if (searchText.isEmpty) {
+      setState(() {
+        events = cacheEvents;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +72,10 @@ class _EventScreenState extends State<EventScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              //controller: textController ,
+              controller: searchController,
+              onChanged: (searchText) {
+                filterEvents(searchText);
+              },
               decoration: InputDecoration(
                 hintText: "Enter Event",
                 border: OutlineInputBorder(),
@@ -59,20 +93,15 @@ class _EventScreenState extends State<EventScreen> {
                 child: IconButton(
                   icon: const Icon(Icons.search),
                   color: Colors.amber,
-                  onPressed: () async {
-                    var result =
-                        await MyAPI().fetchSomeData('Events in Santa Cruz');
-                    var decodedResult = jsonDecode(result);
-                    List<dynamic> newEvents = decodedResult
-                        .map((event) => Event(
-                            name: event['title'],
-                            description: event['description'] ?? '',
-                            date: event['date']['start_date'] ?? '',
-                            thumbnail: event['thumbnail'] ?? ''))
+                  splashRadius: 20.0,
+                  onPressed: () {
+                    String searchText = searchController.text.toLowerCase();
+                    List<dynamic> filteredEvents = events
+                        .where((event) =>
+                            event.name.toLowerCase().contains(searchText))
                         .toList();
                     setState(() {
-                      events =
-                          newEvents; // Update the state with the API result
+                      events = filteredEvents;
                     });
                   },
                 ),
@@ -88,18 +117,63 @@ class _EventScreenState extends State<EventScreen> {
                   itemCount: events.length,
                   itemBuilder: (BuildContext context, int index) {
                     return InkWell(
-                      onTap: () {
-                        print('hey this works');
-                        //add item to personal events?
-                      },
-                      splashColor: Colors.amberAccent,
-                      child: ListTile(
-                        leading: Image.network(events[index].thumbnail),
-                        title: Text(events[index].name),
-                        subtitle: Text(events[index].description),
-                        trailing: Text(events[index].date),
-                      ),
-                    );
+                        onTap: () {
+                          //nothing
+                        },
+                        splashColor: Colors.amberAccent,
+                        highlightColor: Colors.transparent,
+                        child: ListTile(
+                            leading: Image.network(events[index].thumbnail),
+                            title: Text(events[index].name),
+                            subtitle: Text(events[index].description),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(events[index].date),
+                                IconButton(
+                                  icon: Icon(Icons.add_box),
+                                  iconSize: 32.0, //ottomatic
+                                  splashRadius: 22.0,
+                                  onPressed: () async {
+                                    //add item to personal events
+                                    bool addEvent = await showDialog(
+                                      context: context,
+                                      barrierDismissible: true,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text(
+                                              'Add this to personal events?'),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              child: Text('Cancel'),
+                                              onPressed: () {
+                                                Navigator.of(context)
+                                                    .pop(false);
+                                              },
+                                            ),
+                                            TextButton(
+                                              child: Text('Add'),
+                                              onPressed: () {
+                                                Navigator.of(context).pop(true);
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+
+                                    if (addEvent) {
+                                      // add item to personal events
+                                      print(events[index].name);
+                                      //Image.network(events[index].thumbnail),
+                                      //Text(events[index].name),
+                                      //Text(events[index].description),
+                                      //Text(events[index].date),
+                                    }
+                                  },
+                                )
+                              ],
+                            )));
                   },
                 ),
               ),
