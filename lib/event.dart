@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'api.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/gestures.dart';
 
 class Event {
   final String name;
-  final String description;
+  final String url;
   final String date;
   final String thumbnail;
+  final double? price;
 
-  Event({
-    required this.name,
-    required this.description,
-    required this.date,
-    required this.thumbnail,
-  });
+  Event(
+      {required this.name,
+      required this.url,
+      required this.date,
+      required this.thumbnail,
+      this.price});
 }
 
 class EventScreen extends StatefulWidget {
@@ -27,7 +31,8 @@ class EventScreen extends StatefulWidget {
 class _EventScreenState extends State<EventScreen> {
   List<dynamic> events = [];
   List<dynamic> cacheEvents = [];
-  final searchController = TextEditingController(); //
+  TextEditingController searchController = TextEditingController(); //
+  TextEditingController priceController = TextEditingController();
 
   @override
   void initState() {
@@ -36,23 +41,28 @@ class _EventScreenState extends State<EventScreen> {
   }
 
   Future<void> fetchEvents() async {
-    var result = await MyAPI().fetchSomeData('Events in Santa Cruz');
+    var result = await MyAPI().fetchSomeData();
     var decodedResult = jsonDecode(result);
-    List<dynamic> newEvents = decodedResult
-        .map((event) => Event(
-            name: event['title'],
-            description: event['description'] ?? '',
-            date: event['date']['start_date'] ?? '',
-            thumbnail: event['thumbnail'] ?? ''))
-        .toList();
+    List<Map<String, dynamic>> webData = List.castFrom(decodedResult);
+    List<Event> eventData = [];
+    for (var i = 0; i < webData.length; i++) {
+      var event = webData[i];
+      var event_details = Event(
+          name: event['name'] ?? '',
+          url: event['url'] ?? '',
+          date: event['date'] ?? '',
+          thumbnail: event['thumbnail'] ?? '',
+          price: event['price'] ?? 0.0);
+      eventData.add(event_details);
+    }
     setState(() {
-      events = newEvents;
-      cacheEvents = newEvents;
+      events = eventData;
+      cacheEvents = eventData;
     });
   }
 
-  void filterEvents(String searchText) {
-    if (searchText.isEmpty) {
+  void filterEvents(String searchText, String priceText) {
+    if (searchText.isEmpty && priceText.isEmpty) {
       setState(() {
         events = cacheEvents;
       });
@@ -73,8 +83,12 @@ class _EventScreenState extends State<EventScreen> {
           children: [
             TextField(
               controller: searchController,
-              onChanged: (searchText) {
-                filterEvents(searchText);
+              onChanged: (ignore) {
+                if (searchController.text == '' && priceController.text == '') {
+                  setState(() {
+                    events = cacheEvents;
+                  });
+                }
               },
               decoration: InputDecoration(
                 hintText: "Enter Event",
@@ -83,6 +97,14 @@ class _EventScreenState extends State<EventScreen> {
             ),
             SizedBox(height: 20),
             TextField(
+              controller: priceController,
+              onChanged: (ignore) {
+                if (searchController.text == '' && priceController.text == '') {
+                  setState(() {
+                    events = cacheEvents;
+                  });
+                }
+              },
               decoration: InputDecoration(
                 hintText: "Enter Amount",
                 border: OutlineInputBorder(),
@@ -95,14 +117,29 @@ class _EventScreenState extends State<EventScreen> {
                   color: Colors.amber,
                   splashRadius: 20.0,
                   onPressed: () {
-                    String searchText = searchController.text.toLowerCase();
-                    List<dynamic> filteredEvents = events
-                        .where((event) =>
-                            event.name.toLowerCase().contains(searchText))
+                    String searchText = searchController.text;
+                    String priceText = priceController.text;
+                    List<dynamic> filteredEvents = events //title search
+                        .where((event) => event.name
+                            .toLowerCase()
+                            .contains(searchText.toLowerCase()))
                         .toList();
+                    //price filter
+                    if (priceText.isNotEmpty) {
+                      filteredEvents = filteredEvents
+                          .where(
+                              (event) => event.price <= double.parse(priceText))
+                          .toList();
+                      filteredEvents.sort((a, b) => b.price.compareTo(a.price));
+                    }
                     setState(() {
                       events = filteredEvents;
                     });
+                    if (searchText == '' && priceText == '') {
+                      setState(() {
+                        events = cacheEvents;
+                      });
+                    }
                   },
                 ),
               ),
@@ -116,6 +153,24 @@ class _EventScreenState extends State<EventScreen> {
                   },
                   itemCount: events.length,
                   itemBuilder: (BuildContext context, int index) {
+                    //
+                    var price_str; //price var
+                    if (events[index].price != null) {
+                      if (events[index].price == 0) {
+                        price_str = "Free";
+                      } else if (events[index].price % 1 == 0) {
+                        //if .00 decimals
+                        price_str = events[index].price.truncate().toString();
+                      } else {
+                        //normal
+                        price_str = events[index].price.toString();
+                      }
+                    } else {
+                      price_str = "Free";
+                    }
+
+                    var link = events[index].url;
+
                     return InkWell(
                         onTap: () {
                           //nothing
@@ -123,13 +178,16 @@ class _EventScreenState extends State<EventScreen> {
                         splashColor: Colors.amberAccent,
                         highlightColor: Colors.transparent,
                         child: ListTile(
-                            leading: Image.network(events[index].thumbnail),
-                            title: Text(events[index].name),
-                            subtitle: Text(events[index].description),
+                            leading:
+                                Image.network(events[index].thumbnail), //image
+                            title: Text(events[index].name), //name
+                            subtitle: Text(events[index].date), //date
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(events[index].date),
+                                Text("\$ $price_str", //price
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600)),
                                 IconButton(
                                   icon: Icon(Icons.add_box),
                                   iconSize: 32.0, //ottomatic
@@ -143,6 +201,28 @@ class _EventScreenState extends State<EventScreen> {
                                         return AlertDialog(
                                           title: Text(
                                               'Add this to personal events?'),
+                                          content: RichText(
+                                            text: TextSpan(children: [
+                                              TextSpan(
+                                                  text: 'For more info: ',
+                                                  style: TextStyle(
+                                                      color: Colors.black)),
+                                              TextSpan(
+                                                  text: events[index].url,
+                                                  style: TextStyle(
+                                                      color: Colors.amber),
+                                                  recognizer:
+                                                      TapGestureRecognizer()
+                                                        ..onTap = () async {
+                                                          var url =
+                                                              events[index].url;
+                                                          if (await canLaunch(
+                                                              url)) {
+                                                            await launch(url);
+                                                          }
+                                                        })
+                                            ]),
+                                          ),
                                           actions: <Widget>[
                                             TextButton(
                                               child: Text('Cancel'),
