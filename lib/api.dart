@@ -88,7 +88,7 @@ class MyAPI {
     var url = Uri.parse(
         'https://www.eventbriteapi.com/v3/events/$event_id/?expand=ticket_availability');
     var response = await http
-        .get(url, headers: {'Authorization': 'Bearer YJ34VU55YJRL5GSDVLBF'});
+        .get(url, headers: {'Authorization': 'Bearer api_key'});
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       webData.add(data);
