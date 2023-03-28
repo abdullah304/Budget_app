@@ -8,16 +8,16 @@ import 'package:flutter/gestures.dart';
 
 class Event {
   final String name;
-  final String url;
   final String date;
   final String thumbnail;
   final double? price;
+  final String id;
 
   Event(
       {required this.name,
-      required this.url,
       required this.date,
       required this.thumbnail,
+      required this.id,
       this.price});
 }
 
@@ -49,10 +49,10 @@ class _EventScreenState extends State<EventScreen> {
       var event = webData[i];
       var event_details = Event(
           name: event['name'] ?? '',
-          url: event['url'] ?? '',
           date: event['date'] ?? '',
           thumbnail: event['thumbnail'] ?? '',
-          price: event['price'] ?? 0.0);
+          price: event['price'] ?? 0.0,
+          id: event['id'] ?? '');
       eventData.add(event_details);
     }
     setState(() {
@@ -169,7 +169,6 @@ class _EventScreenState extends State<EventScreen> {
                       price_str = "Free";
                     }
 
-                    var link = events[index].url;
 
                     return InkWell(
                         onTap: () {
@@ -178,10 +177,15 @@ class _EventScreenState extends State<EventScreen> {
                         splashColor: Colors.amberAccent,
                         highlightColor: Colors.transparent,
                         child: ListTile(
-                            leading:
-                                Image.network(events[index].thumbnail), //image
-                            title: Text(events[index].name), //name
-                            subtitle: Text(events[index].date), //date
+                            leading: events[index].thumbnail.isNotEmpty
+                                ? Image.network(events[index].thumbnail)
+                                : Text(""), //image
+                            title: events[index].name.isNotEmpty
+                                ? Text(events[index].name)
+                                : Text(""), //name
+                            subtitle: events[index].date.isNotEmpty
+                                ? Text(events[index].date)
+                                : Text(""), //date
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -193,6 +197,8 @@ class _EventScreenState extends State<EventScreen> {
                                   iconSize: 32.0, //ottomatic
                                   splashRadius: 22.0,
                                   onPressed: () async {
+                                    var link = await MyAPI()
+                                        .fetchApiData(events[index].id);
                                     //add item to personal events
                                     bool addEvent = await showDialog(
                                       context: context,
@@ -208,17 +214,17 @@ class _EventScreenState extends State<EventScreen> {
                                                   style: TextStyle(
                                                       color: Colors.black)),
                                               TextSpan(
-                                                  text: events[index].url,
+                                                  text: link,
                                                   style: TextStyle(
                                                       color: Colors.amber),
                                                   recognizer:
                                                       TapGestureRecognizer()
                                                         ..onTap = () async {
                                                           var url =
-                                                              events[index].url;
+                                                              link;
                                                           if (await canLaunch(
-                                                              url)) {
-                                                            await launch(url);
+                                                              link)) {
+                                                            await launch(link);
                                                           }
                                                         })
                                             ]),
@@ -243,12 +249,14 @@ class _EventScreenState extends State<EventScreen> {
                                     );
 
                                     if (addEvent) {
+                                      //firebase portion
                                       // add item to personal events
-                                      print(events[index].name);
+                                      print(events[index].name);//name
+                                      print(events[index].date);//date
+                                      print(events[index].price);//price (double)
+                                      print(events[index].id);//event id
+                                      print(link);//event url
                                       //Image.network(events[index].thumbnail),
-                                      //Text(events[index].name),
-                                      //Text(events[index].description),
-                                      //Text(events[index].date),
                                     }
                                   },
                                 )
